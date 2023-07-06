@@ -1,0 +1,24 @@
+version: '3'
+services:
+  fastapi:
+    volumes:
+      - ./src:/app
+
+  elasticsearch:
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - path.repo=/usr/share/elasticsearch/snapshot
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - ./.data/es:/usr/share/elasticsearch/data
+      - ./etc/es-snapshot:/usr/share/elasticsearch/snapshot
+      - ./etc/restore.sh:/usr/share/elasticsearch/restore.sh
+    
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./.data/rd:/data

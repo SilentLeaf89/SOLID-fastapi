@@ -1,0 +1,14 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+.env
+.env.local
+.venv
+.vscode
+.data
+scratch.py
+.DS_Store
+
+tests.log
+pytest.output.log
+.env.tests

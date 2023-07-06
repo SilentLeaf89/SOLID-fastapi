@@ -1,0 +1,22 @@
+version: '3'
+services:
+  fastapi:
+    command: ["gunicorn", "main:app", "-b", "0.0.0.0:80", "-w", "4", "-k", "uvicorn.workers.UvicornWorker"]
+    healthcheck:
+      test: []
+
+  nginx:
+    deploy:
+      replicas: 0
+
+  tests:
+    image: asyncapi:${ASYNC_API_VERSION}
+    entrypoint: /tests/tests-entrypoint.sh
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    volumes:
+      - ./tests:/tests/

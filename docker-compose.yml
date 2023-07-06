@@ -1,0 +1,64 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:${NGINX_VERSION}
+    environment:
+      - NGINX_PORT=80
+      - SERVER_NAME="_"
+      - GUNICORN_SOCK=/app-socket/async.sock
+      - PROXY_PORT=8000
+    depends_on:
+      fastapi:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./etc/nginx/templates:/etc/nginx/templates:ro
+      - ./etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - socket:/app-socket/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/openapi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  fastapi:
+    image: asyncapi:${ASYNC_API_VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME}
+      - REDIS_HOST=${REDIS_HOST}
+      - ELASTIC_HOST=${ELASTIC_HOST}
+    volumes:
+      - socket:/app-socket/
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; sock = socket.socket(socket.AF_UNIX); sock.connect('/app-socket/async.sock')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  elasticsearch:
+    image: elasticsearch:${ELASTICSEARCH_VERSION}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  socket:

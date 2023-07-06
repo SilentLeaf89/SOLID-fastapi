@@ -1,0 +1,171 @@
+{
+	"info": {
+		"_postman_id": "fec57729-5cfa-4e65-ba1a-05cad698e2b3",
+		"name": "ETLTests movies",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2505861"
+	},
+	"item": [
+		{
+			"name": "Проверка количества элементов",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Compare number of records\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(26);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/genres/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"genres",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Запрос на поиск несуществующего текстового запроса",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Search for N/A records\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(7);",
+							"    pm.expect(pm.response.text()).not.to.have.string('N/A');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": {\n        \"query_string\": {\n            \"query\": \"N//A\"\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/movies/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"movies",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Запрос данных по ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Compare director\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(1);",
+							"    // Ожидается, что в поле director возвращается список. В данном примере список должен быть пустым.",
+							"    pm.expect(jsonData['hits']['hits'][0]['_source']['directors_names']).to.length(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": {\n        \"term\": {\n            \"id\": {\n                \"value\": \"2b980e9c-f266-44fa-a041-d1b161c2095a\"\n            }\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/movies/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"movies",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:9200"
+		}
+	]
+}
